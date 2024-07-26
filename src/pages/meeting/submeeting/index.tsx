@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, message, Modal, Space, Table } from "antd";
 import styled from "@emotion/styled";
 import { ExclamationCircleFilled, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
-import MeetingForm from "@/pages/meeting/form/meetingform.tsx";
+import SubMeetingForm from "@/pages/meeting/form/submeetingform.tsx";
 import { useRequest } from "ahooks";
 import { submeetingDelete, submeetingPage } from "@/api/submeeting.ts";
 import dayjs from "dayjs";
@@ -76,7 +76,13 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
 
         },
         {
-            title: '子会议名称',
+            title: '分组编码',
+            key: 'submeetingCategory',
+            dataIndex: 'submeetingCategory',
+            align: 'center',
+        },
+        {
+            title: '分论坛名称',
             key: 'submeetingName',
             dataIndex: 'submeetingName',
             align: 'center',
@@ -90,12 +96,12 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
         //     dataIndex: 'meetingNameEn',
         //     align: 'center',
         // },
-        {
-            title: '举办单位',
-            key: 'submeetingHost',
-            dataIndex: 'submeetingHost',
-            align: 'center',
-        },
+        // {
+        //     title: '举办单位',
+        //     key: 'submeetingHost',
+        //     dataIndex: 'submeetingHost',
+        //     align: 'center',
+        // },
         {
             title: '开始时间',
             key: 'submeetingBeginDate',
@@ -103,7 +109,7 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
             align: 'center',
             render: (text: any, _record: any, _index: number) => {
                 if (text) {
-                    return dayjs(text).format("YYYY-MM-DD");
+                    return dayjs(text).format("HH:mm:ss");
                 } else {
                     return text
                 }
@@ -116,7 +122,7 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
             align: 'center',
             render: (text: any, _record: any, _index: number) => {
                 if (text) {
-                    return dayjs(text).format("YYYY-MM-DD");
+                    return dayjs(text).format("HH:mm:ss");
                 } else {
                     return text
                 }
@@ -135,6 +141,12 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
         //         }
         //     }
         // },
+        {
+            title: '会议说明',
+            key: 'submeetingRemaker',
+            dataIndex: 'submeetingEndDate',
+            align: 'center',
+        },
         {
             title: '操作',
             key: 'active',
@@ -191,7 +203,7 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
                     }}
                 />
             </Card>
-            <MeetingForm callBack={() => reload()} ref={formRef} />
+            <SubMeetingForm callBack={() => reload()} ref={formRef} />
             <MeetingHelpForm ref={helpRef} callBack={() => reload()} />
         </Container>
     )
