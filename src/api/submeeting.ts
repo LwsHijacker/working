@@ -62,7 +62,16 @@ export const submeetingPage = (data: any): Promise<any> => {
     })
 }
 
+export const submeetingPageByMainId = (data: any): Promise<any> => {
+    return https.request({
+        url: '/submeeting/pageByMainId',
+        method: 'post',
+        data: data
+    })
+}
+
 export const submeetingSave = (data: any): Promise<boolean> => {
+    console.log(data)
     return https.request({
         url: '/submeeting/save',
         method: 'post',

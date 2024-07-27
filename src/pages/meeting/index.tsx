@@ -4,12 +4,18 @@ import { useState } from "react"
 
 const MeetingPage = () => {
     const [showMainMeeting, setShowMainMeeting] = useState<boolean>(true)
-    const something = () => {
+    const [currentMainMeetingId, setCurrentMainMeetingId] = useState<number>(0)
+    const changeComponent = (id?: number) => {
+        if (id) {
+            setCurrentMainMeetingId(id)
+        }
         setShowMainMeeting(!showMainMeeting)
     }
     return (
         <div>
-            {showMainMeeting ? <MainMeetingPage clickMainMeetingName={something} /> : <SubMeetingPage backToMainMeeting={something} />}
+            {showMainMeeting ?
+                <MainMeetingPage clickMainMeetingName={changeComponent} />
+                : <SubMeetingPage mainMeetingId={currentMainMeetingId} backToMainMeeting={changeComponent} />}
         </div>
     )
 }

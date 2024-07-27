@@ -2,19 +2,20 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, message, Modal, Space, Table } from "antd";
 import styled from "@emotion/styled";
 import { ExclamationCircleFilled, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
-import MeetingForm from "@/pages/meeting/form/meetingform.tsx";
+import SubMeetingForm from "@/pages/meeting/form/submeetingform.tsx";
 import { useRequest } from "ahooks";
-import { submeetingDelete, submeetingPage } from "@/api/submeeting.ts";
+import { submeetingDelete, submeetingPageByMainId } from "@/api/submeeting.ts";
 import dayjs from "dayjs";
-import MeetingHelpForm from "@/pages/meeting/form/meetinghelpform.tsx";
+import SubMeetingHelpForm from "@/pages/meeting/form/submeetinghelpform.tsx";
 
-const SubMeetingPage = ({ backToMainMeeting }) => {
+
+const SubMeetingPage = ({ mainMeetingId, backToMainMeeting }: { mainMeetingId: number, backToMainMeeting: () => void }) => {
     const formRef = useRef(null);
     const helpRef = useRef(null);
     const [total, setTotal] = useState<number>(0);
     const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
     const [datasource, setDatasource] = useState([]);
-    const [pageQuery, setPageQuery] = useState({ page: 1, size: 10 });
+    const [pageQuery, setPageQuery] = useState({ page: 1, size: 10, mainId: mainMeetingId });
     const openDrawer = (types: number, data: any) => {
         if (formRef.current != null) {
             if (types === 1) {
@@ -33,7 +34,7 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
         Modal.confirm({
             title: '警告',
             icon: <ExclamationCircleFilled />,
-            content: '确认删除子会议数据？',
+            content: '确认删除分论坛数据？',
             okText: '删除',
             okType: 'danger',
             cancelText: '取消',
@@ -48,7 +49,7 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
         });
     }
 
-    const { loading, run } = useRequest(submeetingPage, {
+    const { loading, run } = useRequest(submeetingPageByMainId, {
         manual: true,
         onSuccess: (data) => {
             setDatasource(data.records);
@@ -76,34 +77,28 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
 
         },
         {
-            title: '子会议名称',
-            key: 'submeetingName',
-            dataIndex: 'submeetingName',
+            title: '论坛名称',
+            key: 'subMeetingName',
+            dataIndex: 'subMeetingName',
             align: 'center',
             render: (text: any, _record: any, _index: number) => {
-                return (<Button size='small' type="link" onClick={() => { alert("Hello,world") }}>{text}</Button>)
+                return (<Button size='small' type="link">{text}</Button>)
             }
         },
-        // {
-        //     title: '英文名称',
-        //     key: 'meetingNameEn',
-        //     dataIndex: 'meetingNameEn',
-        //     align: 'center',
-        // },
         {
-            title: '举办单位',
-            key: 'submeetingHost',
-            dataIndex: 'submeetingHost',
+            title: '分组编码',
+            key: 'groupCode',
+            dataIndex: 'groupCode',
             align: 'center',
         },
         {
             title: '开始时间',
-            key: 'submeetingBeginDate',
-            dataIndex: 'submeetingBeginDate',
+            key: 'subMeetingBeginDate',
+            dataIndex: 'subMeetingBeginDate',
             align: 'center',
             render: (text: any, _record: any, _index: number) => {
                 if (text) {
-                    return dayjs(text).format("YYYY-MM-DD");
+                    return dayjs(text).format("YYYY-MM-DD HH:mm:ss");
                 } else {
                     return text
                 }
@@ -111,30 +106,17 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
         },
         {
             title: '结束时间',
-            key: 'submeetingEndDate',
-            dataIndex: 'submeetingEndDate',
+            key: 'subMeetingEndDate',
+            dataIndex: 'subMeetingEndDate',
             align: 'center',
             render: (text: any, _record: any, _index: number) => {
                 if (text) {
-                    return dayjs(text).format("YYYY-MM-DD");
+                    return dayjs(text).format("YYYY-MM-DD HH:mm:ss");
                 } else {
                     return text
                 }
             }
         },
-        // {
-        //     title: '报名截止时间',
-        //     key: 'meetingRegDate',
-        //     dataIndex: 'meetingRegDate',
-        //     align: 'center',
-        //     render: (text: any, _record: any, _index: number) => {
-        //         if (text) {
-        //             return dayjs(text).format("YYYY-MM-DD");
-        //         } else {
-        //             return text
-        //         }
-        //     }
-        // },
         {
             title: '操作',
             key: 'active',
@@ -172,8 +154,8 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
                     dataSource={datasource}
                     rowKey={(record: any) => record.id}
                     pagination={{
-                        onShowSizeChange: (current, size) => setPageQuery({ ...pageQuery, page: current, size: size }),
-                        onChange: (page, pageSize) => setPageQuery({ ...pageQuery, page: page, size: pageSize }),
+                        onShowSizeChange: (current, size) => setPageQuery({ ...pageQuery, page: current, size: size, mainId: mainMeetingId }),
+                        onChange: (page, pageSize) => setPageQuery({ ...pageQuery, page: page, size: pageSize, mainId: mainMeetingId }),
                         showTotal: () => `共 ${total} 个`,
                         showQuickJumper: true,
                         showSizeChanger: true,
@@ -191,8 +173,8 @@ const SubMeetingPage = ({ backToMainMeeting }) => {
                     }}
                 />
             </Card>
-            <MeetingForm callBack={() => reload()} ref={formRef} />
-            <MeetingHelpForm ref={helpRef} callBack={() => reload()} />
+            <SubMeetingForm callBack={() => reload()} ref={formRef} mainMeetingId={mainMeetingId} />
+            <SubMeetingHelpForm ref={helpRef} callBack={() => reload()} />
         </Container>
     )
 }

@@ -1,31 +1,45 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import { Button, Card, Form, Input, message, Select, Upload, Checkbox, Divider } from "antd";
+import { Button, Card, Form, Input, message, Select, Upload, Checkbox, Radio } from "antd";
 import {useRequest} from "ahooks";
 import {meetingQueryById} from "@/api/meeting.ts";
 import {UploadOutlined} from "@ant-design/icons";
-
 import { meetingUserQueryStatus, meetingUserSave } from "@/api/meetinguser.ts";
-
-import type { CheckboxProps } from 'antd';
 import { submeetingQueryByMainId } from "@/api/submeeting";
 
 
 const MeetingUserRegFormPage = () => {
+    interface subMeeting {
+        groupCode: string
+        id: number
+        mainId: number
+        subMeetingBeginDate: string
+        subMeetingCoOrganizer: string
+        subMeetingEndDate: string
+        subMeetingHelper: string
+        subMeetingHost: string
+        subMeetingName: string
+        subMeetingOrganizer: string
+        subMeetingRemark: string
+    }
 
     const location = useLocation()
     const navigate = useNavigate()
     const [form] = Form.useForm()
+    const [options, setOptions] = useState<{ label: string, value: string, group: string }[]>([]);
 
-    // 通过主会议ID查询所有子会议的名称
-    const [submeetings, setSubmeetings] = useState<string[]>([])
-    const getSubmeetingsByMainId = (mainId: number) => {
-        submeetingQueryByMainId({ mainId })
-            .then(subMeetings => {
-                const subMeetingNames = subMeetings.map((subMeeting: any) => subMeeting.subMeetingName)
-                setSubmeetings(subMeetingNames)
-            })
-            .catch(e => console.log(e.message));
+    const getSubMeetingsByMainId = (id: number) => {
+        submeetingQueryByMainId({ mainId: id }).then(
+            response => {
+                const data = response as subMeeting[]
+                const checkboxOptions = data.map(subMeeting => ({
+                    label: subMeeting.subMeetingName,
+                    value: subMeeting.subMeetingName,
+                    group: subMeeting.groupCode
+                }));
+                setOptions(checkboxOptions);
+            }
+        ).catch(e => console.log(e.message))
     }
 
     const {loading, run} = useRequest(meetingQueryById, {
@@ -36,6 +50,7 @@ const MeetingUserRegFormPage = () => {
                 u.meetingId = data.id
                 u.meetingName = data.meetingName
                 form.setFieldsValue(u)
+                getSubMeetingsByMainId(data.id) // Call the function here
             }).catch(e => console.log(e.message))
         }
     })
@@ -43,6 +58,7 @@ const MeetingUserRegFormPage = () => {
 
     const submit = () => {
         form.validateFields().then(values => {
+            console.log(values)
             if (values.userPostType === "-1") {
                 message.warning("职务为必选项")
             } else if (values.userPostType === "1" && !values.file) {
@@ -71,8 +87,6 @@ const MeetingUserRegFormPage = () => {
                         }
                     ).catch(e => console.log(e))
                 }
-
-                // TODO 增加对于分论坛时间冲突的验证
             }
         })
     }
@@ -88,14 +102,6 @@ const MeetingUserRegFormPage = () => {
 
 
     const CheckboxGroup = Checkbox.Group;
-
-    const plainOptions = ['极端环境道路工程灾害防控与应急保障', '工程地质灾害勘察技术与发展动态', '极端环境交通基础设施智能感知与安全运维', '极端环境道路工程材料耐久与结构韧性', '极端环境交通基础设施防灾减灾与韧性提升', '极端环境交通基础设施高品质建养'];
-    // const defaultCheckedList = ['极端环境道路工程灾害防控与应急保障', '工程地质灾害勘察技术与发展动态'];
-    const [checkedList, setCheckedList] = useState<string[]>([]);
-
-    const onChange = (list: string[]) => {
-        setCheckedList(list);
-    };
 
     return (
         <Card>
@@ -124,9 +130,6 @@ const MeetingUserRegFormPage = () => {
                                rules={[{required: true, message: "必填项"}]}>
                         <Input/>
                     </Form.Item>
-                    {/*<Form.Item name={"userEnName"} label={"英文名"} required={true}>*/}
-                    {/*    <Input/>*/}
-                    {/*</Form.Item>*/}
                     <Form.Item name={"userCardId"} label={"身份证号"}>
                         <Input/>
                     </Form.Item>
@@ -151,9 +154,6 @@ const MeetingUserRegFormPage = () => {
                                required={true}>
                         <Input/>
                     </Form.Item>
-                    {/*<Form.Item name={"userWorkUnitEn"} label={"工作单位英文名称"}>*/}
-                    {/*    <Input/>*/}
-                    {/*</Form.Item>*/}
                     <Form.Item name={"userJob"} label={"职  位"}>
                         <Input/>
                     </Form.Item>
@@ -196,22 +196,16 @@ const MeetingUserRegFormPage = () => {
                         }}
                     </Form.Item>
 
-                    {/*<Form.Item name={"bookingHotel"} label={"是否代订酒"} */}
-                    {/*           tooltip={"如果您是学生,请在后面选择上传您的学生证"}>*/}
-                    {/*    <Select defaultValue={"-1"}>*/}
-                    {/*        <Select.Option key={"-1"}>请选择</Select.Option>*/}
-                    {/*        <Select.Option key={"1"}>是</Select.Option>*/}
-                    {/*        <Select.Option key={"2"}>否</Select.Option>*/}
-                    {/*    </Select>*/}
-                    {/*</Form.Item>*/}
+                    <Form.Item name="interestedSubject" label="会议主题">
+                        <Radio.Group>
+                            {options.filter(option => option.group === "主旨主题类").map(option => (
+                                <Radio key={option.value} value={option.label}>{option.label}</Radio>
+                            ))}
+                        </Radio.Group>
+                    </Form.Item>
 
-                    {/* TODO 增加复选框，选择会议论坛 */}
-                    <Form.Item name="subMeeting" label="感兴趣的分论坛" tooltip={"选择你感兴趣的分论坛主题"}>
-                        {/* <Checkbox indeterminate={indeterminate} onChange={onCheckAllChange} checked={checkAll}>
-                            全选
-                        </Checkbox>
-                        <Divider /> */}
-                        <CheckboxGroup options={plainOptions} value={checkedList} onChange={onChange} />
+                    <Form.Item name={"interestedSubMeeting"} label="感兴趣的分论坛" tooltip={"选择你感兴趣的分论坛主题"}>
+                        <CheckboxGroup options={options.filter(option => option.group === "分论坛类")} />
                     </Form.Item>
 
                 </Form>

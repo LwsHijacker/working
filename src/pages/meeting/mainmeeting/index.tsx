@@ -7,10 +7,9 @@ import { useRequest } from "ahooks";
 import { meetingPage, meetingDeleteById } from "@/api/meeting.ts";
 import dayjs from "dayjs";
 import MeetingHelpForm from "@/pages/meeting/form/meetinghelpform.tsx";
-import { useNavigate } from 'react-router-dom';
 
 
-const MainMeetingPage = ({ clickMainMeetingName }: { clickMainMeetingName: any }) => {
+const MainMeetingPage = ({ clickMainMeetingName }: { clickMainMeetingName: (id: number) => void }) => {
     const formRef = useRef(null);
     const helpRef = useRef(null);
     const [total, setTotal] = useState<number>(0);
@@ -85,7 +84,7 @@ const MainMeetingPage = ({ clickMainMeetingName }: { clickMainMeetingName: any }
             dataIndex: 'meetingName',
             align: 'center',
             render: (text: any, _record: any, _index: number) => {
-                return (<Button size='small' type="link" onClick={clickMainMeetingName}>{text}</Button>)
+                return (<Button size='small' type="link" onClick={() => clickMainMeetingName(_record.id)}>{text}</Button>)
             }
         },
         {
